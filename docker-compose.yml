@@ -47,15 +47,15 @@ services:
     build: ./mongo/mongosetup/
 
   suggestionbox:
+    privileged: true
     hostname: ${SUGGESTIONBOX}
     container_name: ${SUGGESTIONBOX}
     build: ./suggestionbox/
-    user: "node"
-    working_dir: /home/node/app
+    working_dir: /usr/src/app
     restart: always
     command: "npm start"
     volumes:
-      - ./suggestionbox/:/home/node/app
+      - ./suggestionbox/:/usr/src/app
     ports:
       - "3001:3000"
 
@@ -63,17 +63,15 @@ services:
     hostname: ${WEBAPP}
     container_name: ${WEBAPP}
     build: ./webapp/
-    user: "node"
-    working_dir: /home/node/app
+    working_dir: /usr/src/app
     restart: always
     command: "npm run dev"
     volumes:
-      - ./webapp/:/home/node/app
+      - ./webapp/:/usr/src/app
     ports:
       - "3000:8080"
 
   zabbixagent:
-    privileged: true
     hostname: ${ZABBIXAGENT}
     container_name: ${ZABBIXAGENT}
     image: monitoringartist/dockbix-agent-xxl-limited
