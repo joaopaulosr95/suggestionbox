@@ -2,7 +2,7 @@ default: prepare up base
 
 prepare:
 	mkdir -p mongo/member_1/data && mkdir -p mongo/member_2/data &&	mkdir -p mongo/member_3/data
-	mkdir -p zabbix/mariad/data
+	mkdir -p zabbix/mariadb/data
 
 up:
 	docker-compose up --build --no-start --force-recreate
