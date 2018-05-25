@@ -46,9 +46,7 @@ suggestionRouter.get("/:suggestionId", (req: Request, res: Response, next: NextF
                 console.log(err);
                 return next(err);
             }
-            return res.json({
-                data: docs
-            });
+            return res.json(docs);
         });
     }).catch((err) => {
         console.error(err)

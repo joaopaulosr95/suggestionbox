@@ -30,20 +30,26 @@
       </b-col>
       <b-col lg="3">
         <b-card :title="(model._id ? 'Edit Suggestion' : 'New Suggestion')">
-          <form @submit.prevent="saveSuggestion">
+          <form @submit.prevent="checkForm">
+            <b-alert :show="errors" variant="danger" v-if="errors.length">
+              <ul>
+                <li v-for="error in errors">{{ error }}</li>
+              </ul>
+            </b-alert>
             <b-form-group label="First name">
-              <b-form-input type="text" v-model="model.firstName"></b-form-input>
+              <b-form-input type="text" v-model="model.firstName" aria-required="true"></b-form-input>
             </b-form-group>
             <b-form-group label="Last name">
-              <b-form-input type="text" v-model="model.lastName"></b-form-input>
+              <b-form-input type="text" v-model="model.lastName" aria-required="true"></b-form-input>
             </b-form-group>
             <b-form-group label="Email">
-              <b-form-input type="text" v-model="model.email"></b-form-input>
+              <b-form-input type="text" v-model="model.email" aria-required="true"></b-form-input>
             </b-form-group>
             <b-form-group label="Message">
-              <b-form-textarea rows="4" v-model="model.message"></b-form-textarea>
+              <b-form-textarea rows="4" v-model="model.message" aria-required="true"></b-form-textarea>
             </b-form-group>
             <div>
+              <b-btn type="button" @click="abortForm()" variant="info">Cancel</b-btn>
               <b-btn type="submit" variant="success">Save Suggestion</b-btn>
             </div>
           </form>
@@ -102,6 +108,7 @@ export default {
     return {
       loading: false,
       suggestions: [],
+      errors: [],
       model: {}
     }
   },
@@ -110,30 +117,41 @@ export default {
     await this.refreshSuggestions()
   },
   methods: {
+    async checkForm (e) {
+      this.errors = []
+      if (!this.model.firstName) this.errors.push('First name required')
+      if (!this.model.lastName) this.errors.push('Last name required')
+      if (!this.model.email) this.errors.push('Email required')
+      if (!this.model.message) this.errors.push('Message required')
+      if (this.errors.length === 0) {
+        await this.saveSuggestion()
+      }
+    },
+    async abortForm () {
+      this.model = {}
+      await this.refreshSuggestions()
+    },
     // ui operations
     async refreshSuggestions () {
+      this.errors = []
       this.loading = true
       this.suggestions = await getSuggestions()
       this.loading = false
     },
     async populateSuggestionToEdit (suggestion) {
+      this.errors = []
       this.model = Object.assign({}, suggestion)
     },
     async saveSuggestion () {
-      if (this.model._id) {
-        await updateSuggestion(this.model._id, this.model)
-      } else {
-        await createSuggestion(this.model)
-      }
-      this.model = {} // reset form
+      if (this.model._id) await updateSuggestion(this.model._id, this.model)
+      else await createSuggestion(this.model)
+      this.model = {}
       await this.refreshSuggestions()
     },
     async removeSuggestion (id) {
       if (confirm('Are you sure you want to delete this suggestion?')) {
         // if we are editing a suggestion we deleted, remove it from the form
-        if (this.model._id === id) {
-          this.model = {}
-        }
+        if (this.model._id === id) this.model = {}
         await deleteSuggestion(id)
         await this.refreshSuggestions()
       }
