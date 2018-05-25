@@ -5,12 +5,6 @@ import * as Mongoose from "mongoose";
 import { INSPECT_MAX_BYTES } from "buffer";
 
 const suggestionRouter: Router = Router();
-const serverInternalError = {
-    error: {
-        code: 500,
-        message: "Please contact administrator."
-    }
-};
 
 suggestionRouter.get("/", (req: Request, res: Response, next: NextFunction) => {
     Mongoose.connect(config.getDBURL(), config.DB.opts)
