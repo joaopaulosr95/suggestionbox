@@ -1,7 +1,8 @@
-import { Request, Response, Router } from "express";
+import { Request, Response, Router, NextFunction } from "express";
 import { Suggestion } from "../models/suggestion";
 import * as config from "../config";
 import * as Mongoose from "mongoose";
+import { INSPECT_MAX_BYTES } from "buffer";
 
 const suggestionRouter: Router = Router();
 const serverInternalError = {
@@ -11,16 +12,16 @@ const serverInternalError = {
     }
 };
 
-suggestionRouter.get("/", (req: Request, res: Response) => {
+suggestionRouter.get("/", (req: Request, res: Response, next: NextFunction) => {
     Mongoose.connect(config.getDBURL(), config.DB.opts)
     .then(() => {
         Suggestion.find({}, (err, docs) => {
             if (err) {
-                console.log(err);
-                return res.json(serverInternalError);
+                console.error(err);
+                return next(err);
             }
             else {
-                return res.json({data: docs});
+                return res.json(docs);
             }
         });
     }).catch(err => {
@@ -28,98 +29,66 @@ suggestionRouter.get("/", (req: Request, res: Response) => {
     });
 });
 
-suggestionRouter.post("/", (req: Request, res: Response) => {
+suggestionRouter.post("/", (req: Request, res: Response, next: NextFunction) => {
     Mongoose.connect(config.getDBURL(), config.DB.opts)
     .then(() => {
         Suggestion.create(req.body, (err, docs) => {
             if (err) {
-                if (err.name == "ValidationError") {
-                    let messages = [];
-                    for (let field in err.errors) {
-                        messages.push(err.errors[field].message)
-                    }
-                    return res.json({
-                        error: {
-                            code: 400,
-                            message: messages
-                        }
-                    })
-                }
-                else {
-                    return res.json(serverInternalError);
-                }
+                console.error(err);
+                return next(err);
             }
-            return res.json({
-                data: docs
-            });
+            return res.json(docs);
         });
     }).catch((err) => {
-        console.log(err);
+        console.error(err);
     });
 });
 
-suggestionRouter.get("/:suggestionId", (req: Request, res: Response) => {
+suggestionRouter.get("/:suggestionId", (req: Request, res: Response, next: NextFunction) => {
     Mongoose.connect(config.getDBURL(), config.DB.opts)
     .then(() => {
         Suggestion.findById(req.params.suggestionId, (err, docs) => {
             if (err) {
                 console.log(err);
-                return res.json(serverInternalError);
+                return next(err);
             }
             return res.json({
                 data: docs
             });
         });
     }).catch((err) => {
-        console.log(err)
+        console.error(err)
     });
 });
 
-suggestionRouter.patch("/:suggestionId", (req: Request, res: Response) => {
+suggestionRouter.patch("/:suggestionId", (req: Request, res: Response, next: NextFunction) => {
     Mongoose.connect(config.getDBURL(), config.DB.opts)
     .then(() => {
         Suggestion.findByIdAndUpdate(req.params.suggestionId, req.body,
             {new: true, runValidators: true}, (err, docs) => {
                 if (err) {
-                    if (err.name == "ValidationError") {
-                        let messages = [];
-                        for (let field in err.errors) {
-                            messages.push(err.errors[field].message)
-                        }
-                        return res.json({
-                            error: {
-                                code: 400,
-                                message: messages
-                            }
-                        })
-                    }
-                    else {
-                        return res.json(serverInternalError);
-                    }
+                    console.error(err);
+                    return next(err);
                 }
-                return res.json({
-                    data: docs
-                });
+                return res.json(docs);
             });
     }).catch((err) => {
-        console.log(err);
+        console.error(err);
     });
 });
     
-suggestionRouter.delete("/:suggestionId", (req: Request, res: Response) => {
+suggestionRouter.delete("/:suggestionId", (req: Request, res: Response, next: NextFunction) => {
     Mongoose.connect(config.getDBURL(), config.DB.opts)
     .then(() => {
         Suggestion.findByIdAndRemove(req.params.suggestionId, (err, docs) => {
             if (err) {
-                console.log(err);
-                return res.json(serverInternalError);
+                console.error(err);
+                return next(err);
             }
-            return res.json({
-                data: docs
-            });
+            return res.json(docs);
         });
     }).catch((err) => {
-        console.log(err);
+        console.error(err);
     });
 });
         
