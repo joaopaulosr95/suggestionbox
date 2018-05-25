@@ -1,0 +1,117 @@
+version: "3"
+services:
+
+  adminmongo: # nice GUI for mongo :)
+    hostname: ${ADMINMONGO}
+    container_name: ${ADMINMONGO}
+    image: "mrvautin/adminmongo"
+    restart: always
+    ports:
+      - "3002:1234"
+
+  mongo1:
+    hostname: ${MONGO1}
+    container_name: ${MONGO1}
+    image: mongo:3.6-jessie
+    restart: always
+    command: --replSet rs0 --smallfiles --oplogSize 1048576
+    volumes:
+      - ./mongo/member_1/data:/data/db
+
+  mongo2:
+    hostname: ${MONGO2}
+    container_name: ${MONGO2}
+    image: mongo:3.6-jessie
+    restart: always
+    command: --replSet rs0 --smallfiles --oplogSize 1048576
+    volumes:
+      - ./mongo/member_2/data:/data/db
+
+  mongo3:
+    hostname: ${MONGO3}
+    container_name: ${MONGO3}
+    image: mongo:3.6-jessie
+    restart: always
+    command: --replSet rs0 --smallfiles --oplogSize 1048576
+    volumes:
+      - ./mongo/member_3/data:/data/db
+
+  # mongo instance that builds the replica set
+  mongosetup:
+    depends_on:
+      - mongo1
+      - mongo2
+      - mongo3
+    hostname: ${MONGOSETUP}
+    container_name: ${MONGOSETUP}
+    build: ./mongo/mongosetup/
+
+  suggestionbox:
+    hostname: ${SUGGESTIONBOX}
+    container_name: ${SUGGESTIONBOX}
+    build: ./suggestionbox/
+    user: "node"
+    working_dir: /home/node/app
+    restart: always
+    command: "npm start"
+    volumes:
+      - ./suggestionbox/:/home/node/app
+    ports:
+      - "3001:3000"
+
+  webapp:
+    hostname: ${WEBAPP}
+    container_name: ${WEBAPP}
+    build: ./webapp/
+    user: "node"
+    working_dir: /home/node/app
+    restart: always
+    command: "npm run dev"
+    volumes:
+      - ./webapp/:/home/node/app
+    ports:
+      - "3000:8080"
+
+  zabbixagent:
+    privileged: true
+    hostname: ${ZABBIXAGENT}
+    container_name: ${ZABBIXAGENT}
+    image: monitoringartist/dockbix-agent-xxl-limited
+    restart: unless-stopped
+    volumes:
+      - /:/rootfs
+      - /var/run:/var/run
+    environment:
+      - ZA_Server=${ZABBIXSERVER}
+
+  # optimized mariadb image
+  zabbixdb:
+    hostname: ${ZABBIXDB}
+    container_name: ${ZABBIXDB}
+    image: monitoringartist/zabbix-db-mariadb
+    restart: unless-stopped
+    volumes:
+      - ./zabbix/mariadb/data:/var/lib/mysql
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      - MARIADB_USER=${ZABBIXDB_USER}
+      - MARIADB_PASS=${ZABBIXDB_PASSWD}
+      - DB_innodb_buffer_pool_size=768M
+
+  # uses same base as zabbix/zabbix and provides some add-ons
+  zabbixserver:
+    depends_on:
+      - zabbixdb
+    hostname: ${ZABBIXSERVER}
+    container_name: ${ZABBIXSERVER}
+    image: monitoringartist/dockbix-xxl:3.4.9
+    restart: unless-stopped
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - "3003:80" # app interface
+      - "10051:10051" # server interface
+    environment:
+      - ZS_DBHost=${ZABBIXDB}
+      - ZS_DBUser=${ZABBIXDB_USER}
+      - ZS_DBPassword=${ZABBIXDB_PASSWD}
