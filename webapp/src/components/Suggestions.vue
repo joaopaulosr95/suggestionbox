@@ -15,7 +15,7 @@
           </tr>
           </thead>
           <tbody>
-          <tr v-for="suggestion in suggestions.data" :key="suggestion._id">
+          <tr v-for="suggestion in suggestions" :key="suggestion._id">
             <td>{{ suggestion.firstName }} {{ suggestion.lastName }}</td>
             <td>{{ suggestion.email }}</td>
             <td>{{ suggestion.message }}</td>
@@ -55,7 +55,47 @@
 
 <script>
 import axios from 'axios'
-const baseURL = 'http://172.18.0.1:3001/suggestions'
+
+const ax = axios.create({
+  baseURL: 'http://localhost:3001/suggestions',
+  timeout: 3000,
+  headers: {
+    // 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+    // 'Access-Control-Allow-Origin': 'localhost'
+  }
+})
+// crud operations
+const getSuggestions = async () => {
+  return ax.get('/').then(res => {
+    return res.data
+  }).catch(err => {
+    console.log({bla: err})
+  })
+}
+/*
+const getSuggestion = async (id) => {
+  return ax.get(`/${id}`).then(res => {
+    return res.data
+  }).catch(err => {
+    console.log(err)
+  })
+}
+*/
+const createSuggestion = async (data) => {
+  return ax.post('/', data).catch(err => {
+    console.log(err)
+  })
+}
+const updateSuggestion = async (id, data) => {
+  return ax.patch(`/${id}`, data).catch(err => {
+    console.log(err)
+  })
+}
+const deleteSuggestion = async (id) => {
+  return ax.delete(`/${id}`).catch(err => {
+    console.log(err)
+  })
+}
 
 export default {
   data () {
@@ -70,46 +110,10 @@ export default {
     await this.refreshSuggestions()
   },
   methods: {
-    // crud operations
-    async getSuggestions () {
-      return axios.get(baseURL).then(res => {
-        return res.data
-      }).catch(err => {
-        console.log(err)
-      })
-    },
-    async getSuggestion (id) {
-      return axios.get(`${baseURL}/${id}`).then(res => {
-        return res.data
-      }).catch(err => {
-        console.log(err)
-      })
-    },
-    async createSuggestion (data) {
-      axios.post(baseURL, data).then(res => {
-        return res.data
-      }).catch(err => {
-        console.log(err)
-      })
-    },
-    async updateSuggestion (id, data) {
-      axios.patch(`${baseURL}/${id}`, data).then(res => {
-        return res.data
-      }).catch(err => {
-        console.log(err)
-      })
-    },
-    async deleteSuggestion (id) {
-      axios.delete(`${baseURL}/${id}`).then(res => {
-        return res.data
-      }).catch(err => {
-        console.log(err)
-      })
-    },
     // ui operations
     async refreshSuggestions () {
       this.loading = true
-      this.suggestions = await this.getSuggestions()
+      this.suggestions = await getSuggestions()
       this.loading = false
     },
     async populateSuggestionToEdit (suggestion) {
@@ -117,9 +121,9 @@ export default {
     },
     async saveSuggestion () {
       if (this.model._id) {
-        await this.updateSuggestion(this.model._id, this.model)
+        await updateSuggestion(this.model._id, this.model)
       } else {
-        await this.createSuggestion(this.model)
+        await createSuggestion(this.model)
       }
       this.model = {} // reset form
       await this.refreshSuggestions()
@@ -130,7 +134,7 @@ export default {
         if (this.model._id === id) {
           this.model = {}
         }
-        await this.removeSuggestion(id)
+        await deleteSuggestion(id)
         await this.refreshSuggestions()
       }
     }
