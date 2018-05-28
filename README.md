@@ -21,9 +21,9 @@ The above diagram is an attempt to illustrate how things interact and which port
 There are three major groups and they will be explained separatedly in a proper way.
 
 ## webapp
-According to Makefile, `webapp` is composed by 
+According to Makefile, `webapp` is composed by
 
-    wepapp: 
+    wepapp:
         docker-compose start suggestionbox webapp
 
 ### backend - suggestionbox
@@ -127,7 +127,7 @@ Response:
     "firstName": "Ella",
     "lastName": "Smith",
     "email": "ella.smith@protonmail.com",
-    "message": "Testing update method!", 
+    "message": "Testing update method!",
     "updated_at": "2018-05-25T18:49:27.967Z",
     "__v": 0
 }
@@ -139,16 +139,16 @@ The webapp container provides an single-page application on http://localhost:300
 ![Suggestion box from May 25th, 2018](resources/webapp_1.png)
 
 ## mongo
-According to Makefile, `mongo` is composed by 
+According to Makefile, `mongo` is composed by
 
-    mongo: 
+    mongo:
         docker-compose start mongo1 mongo2 mongo3 && sleep 10
 	    docker-compose start mongosetup && sleep 10
 	    docker-compose start adminmongo
 
 ### mongo1, mongo2 and mongo 3
 These are basic mongo instances with no proper Dockerfiles and no port exposure to the outside world.
-    
+
 ### mongosetup
 He is the magician one :D Thanks [@mrvautin](https://github.com/mrvautin/adminMongo)
 This container is also a mongo container but has its own Dockerfile. It is in charge of setting up a mongo replica set named `rs0` (check mongo/mongosetup for more details).  basically waits until both `mongo1, mongo2, mongo3` come online and than ties them all.
@@ -168,13 +168,10 @@ Finally you will be presented a complete interface to <del>destroy your</del> ma
 
 ![Adminmongo connected from May 25th, 2018](resources/adminmongo_3.png)
 
-- suggestionbox
-    aplicação em express.js e typescript para coleta de sugestões
-
 ## zabbix
 This is a TODO feature, Zabbix provides us low-level monitoring and service discovery.
 
-According to Makefile, `zabbix` is composed by 
+According to Makefile, `zabbix` is composed by
 
     zabbix:
         docker-compose start zabbixdb && sleep 5
