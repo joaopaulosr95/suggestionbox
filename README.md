@@ -1,4 +1,5 @@
 # suggestion box
+(incomplete project)
 
 * author: João Paulo Bastos <joaopaulosr95@gmail.com>
 * license: GPL
