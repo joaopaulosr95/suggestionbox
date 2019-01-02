@@ -24,3 +24,4 @@ clean-deploy: drop clean-all build up-fresh base
 
 clean-all:
 	cd mongo && make clean
+	cd api && make clean

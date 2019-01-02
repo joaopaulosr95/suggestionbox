@@ -45,3 +45,16 @@ services:
     hostname: ${MONGOSETUP}
     container_name: ${MONGOSETUP}
     build: ./mongo/mongosetup/
+
+  api:
+    hostname: ${API}
+    container_name: ${API}
+    build: ./api/
+    restart: always
+    ports:
+      - "3000:3000"
+    #dev only
+    #working_dir: "/api"
+    #entrypoint: ["npm", "run", "dev"]
+    #volumes: 
+    # - "./api/:/api/"
