@@ -1,0 +1,47 @@
+version: "3"
+services:
+
+  adminmongo: # nice GUI for mongo :)
+    hostname: ${ADMINMONGO}
+    container_name: ${ADMINMONGO}
+    image: "mrvautin/adminmongo"
+    restart: always
+    ports:
+      - "3002:1234"
+
+  mongo1:
+    hostname: ${MONGO1}
+    container_name: ${MONGO1}
+    image: mongo:${MONGO_TAG}
+    restart: always
+    command: --replSet rs0 --smallfiles --oplogSize 1048576
+    volumes:
+      - ./mongo/member_1/data:/data/db
+
+  mongo2:
+    hostname: ${MONGO2}
+    container_name: ${MONGO2}
+    image: mongo:${MONGO_TAG}
+    restart: always
+    command: --replSet rs0 --smallfiles --oplogSize 1048576
+    volumes:
+      - ./mongo/member_2/data:/data/db
+
+  mongo3:
+    hostname: ${MONGO3}
+    container_name: ${MONGO3}
+    image: mongo:${MONGO_TAG}
+    restart: always
+    command: --replSet rs0 --smallfiles --oplogSize 1048576
+    volumes:
+      - ./mongo/member_3/data:/data/db
+
+  # mongo instance that builds the replica set
+  mongosetup:
+    depends_on:
+      - mongo1
+      - mongo2
+      - mongo3
+    hostname: ${MONGOSETUP}
+    container_name: ${MONGOSETUP}
+    build: ./mongo/mongosetup/
