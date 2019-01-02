@@ -54,7 +54,19 @@ services:
     ports:
       - "3000:3000"
     #dev only
-    #working_dir: "/api"
-    #entrypoint: ["npm", "run", "dev"]
-    #volumes: 
-    # - "./api/:/api/"
+    working_dir: "/api"
+    entrypoint: ["npm", "run", "dev"]
+    volumes: 
+     - "./api/:/api/"
+
+  webapp:
+    hostname: ${WEBAPP}
+    container_name: ${WEBAPP}
+    build: ./webapp/
+    working_dir: /usr/src/app
+    restart: always
+    command: "npm run dev"
+    volumes:
+      - ./webapp/:/usr/src/app
+    ports:
+      - "8080:8080"
